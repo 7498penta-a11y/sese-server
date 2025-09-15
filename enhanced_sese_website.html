@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>seseサーバー - Discord & マインクラフトコミュニティ</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f23, #1a1a2e, #16213e);
+      color: #ffffff;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* 背景アニメーション */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.1) 0%, transparent 50%);
+      z-index: -1;
+      animation: floatingBg 20s ease-in-out infinite;
+    }
+
+    @keyframes floatingBg {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.6; }
+    }
+
+    /* ヘッダー */
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 60px 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      animation: headerGlow 8s ease-in-out infinite;
+    }
+
+    @keyframes headerGlow {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(180deg); }
+    }
+
+    .header-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    header img {
+      max-width: 200px;
+      display: block;
+      margin: 0 auto 20px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+      border: 4px solid rgba(255,255,255,0.2);
+      transition: transform 0.3s ease;
+    }
+
+    header img:hover {
+      transform: scale(1.05) rotate(2deg);
+    }
+
+    header h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+      text-shadow: 3px 3px 10px rgba(0,0,0,0.7);
+      background: linear-gradient(45deg, #fff, #f0f0f0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      opacity: 0.9;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 15px 25px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #ffd700;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    /* ナビゲーション */
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      background: rgba(44, 47, 51, 0.95);
+      padding: 15px 0;
+      backdrop-filter: blur(10px);
+      border-bottom: 2px solid rgba(114, 137, 218, 0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    nav button {
+      background: linear-gradient(135deg, #7289da, #99aab5);
+      border: none;
+      color: white;
+      padding: 15px 30px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 25px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(114, 137, 218, 0.3);
+      position: relative;
+      overflow: hidden;
+      font-weight: 600;
+    }
+
+    nav button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+      transition: all 0.3s ease;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    nav button:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    nav button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(114, 137, 218, 0.5);
+    }
+
+    nav button.active {
+      background: linear-gradient(135deg, #ffffff, #f0f0f0);
+      color: #2c2f33;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255,255,255,0.3);
+    }
+
+    /* セクション */
+    section {
+      display: none;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    section.active {
+      display: block;
+      animation: slideIn 0.6s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { 
+        opacity: 0; 
+        transform: translateY(30px); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0); 
+      }
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .section-title {
+      font-size: 36px;
+      margin-bottom: 15px;
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section-description {
+      font-size: 18px;
+      opacity: 0.8;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* カード系レイアウト */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .feature-card {
+      background: linear-gradient(135deg, rgba(44, 47, 51, 0.9), rgba(32, 34, 37, 0.9));
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      border: 1px solid rgba(114, 137, 218, 0.2);
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+      border-radius: 20px;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .card-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+      display: block;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #ffffff;
+    }
+
+    .card-description {
+      opacity: 0.85;
+      line-height: 1.6;
+    }
+
+    /* 詳細情報セクション */
+    .detail-section {
+      background: linear-gradient(135deg, rgba(44, 47, 51, 0.95), rgba(32, 34, 37, 0.95));
+      padding: 40px;
+      border-radius: 20px;
+      margin: 40px 0;
+      border: 1px solid rgba(114, 137, 218, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-top: 30px;
+    }
+
+    .detail-item {
+      padding: 25px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      border-left: 4px solid #7289da;
+    }
+
+    .detail-item h4 {
+      color: #7289da;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    /* タイムライン */
+    .timeline {
+      position: relative;
+      margin: 40px 0;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, #7289da, #99aab5);
+      transform: translateX(-50%);
+    }
+
+    .timeline-item {
+      display: flex;
+      margin: 30px 0;
+      position: relative;
+    }
+
+    .timeline-item:nth-child(odd) {
+      flex-direction: row-reverse;
+    }
+
+    .timeline-content {
+      flex: 1;
+      padding: 25px;
+      background: linear-gradient(135deg, rgba(44, 47, 51, 0.9), rgba(32, 34, 37, 0.9));
+      border-radius: 15px;
+      margin: 0 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      border: 1px solid rgba(114, 137, 218, 0.2);
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 20px;
+      height: 20px;
+      background: #7289da;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      border: 4px solid #1e1f22;
+      box-shadow: 0 0 0 4px rgba(114, 137, 218, 0.3);
+    }
+
+    /* ボタン */
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 10px;
+      padding: 18px 35px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: bold;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .cta-button:hover::before {
+      left: 100%;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(102, 126, 234, 0.6);
+    }
+
+    .button-group {
+      text-align: center;
+      margin: 40px 0;
+    }
+
+    /* FAQ セクション */
+    .faq-item {
+      background: rgba(44, 47, 51, 0.7);
+      margin: 15px 0;
+      border-radius: 15px;
+      overflow: hidden;
+      border: 1px solid rgba(114, 137, 218, 0.2);
+    }
+
+    .faq-question {
+      padding: 20px 25px;
+      background: linear-gradient(135deg, rgba(114, 137, 218, 0.2), rgba(153, 170, 181, 0.2));
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .faq-question:hover {
+      background: linear-gradient(135deg, rgba(114, 137, 218, 0.3), rgba(153, 170, 181, 0.3));
+    }
+
+    .faq-answer {
+      padding: 0 25px;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      opacity: 0;
+    }
+
+    .faq-item.active .faq-answer {
+      padding: 20px 25px;
+      max-height: 200px;
+      opacity: 1;
+    }
+
+    .faq-toggle {
+      font-size: 20px;
+      transition: transform 0.3s ease;
+    }
+
+    .faq-item.active .faq-toggle {
+      transform: rotate(45deg);
+    }
+
+    /* スタッフセクション */
+    .staff-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+      margin: 30px 0;
+    }
+
+    .staff-card {
+      text-align: center;
+      padding: 30px 20px;
+      background: linear-gradient(135deg, rgba(44, 47, 51, 0.9), rgba(32, 34, 37, 0.9));
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(114, 137, 218, 0.2);
+    }
+
+    .staff-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+    }
+
+    .staff-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin: 0 auto 15px;
+      background: linear-gradient(135deg, #7289da, #99aab5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      color: white;
+    }
+
+    /* フッター */
+    footer {
+      text-align: center;
+      padding: 50px 20px;
+      background: linear-gradient(135deg, #2c2f33, #1e1f22);
+      margin-top: 80px;
+      border-top: 2px solid rgba(114, 137, 218, 0.3);
+    }
+
+    .footer-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin: 30px 0;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: #7289da;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: #99aab5;
+    }
+
+    /* レスポンシブ対応 */
+    @media (max-width: 768px) {
+      header h1 { font-size: 32px; }
+      .section-title { font-size: 28px; }
+      nav { flex-wrap: wrap; padding: 10px; }
+      nav button { padding: 12px 20px; font-size: 14px; }
+      .stats-bar { gap: 20px; }
+      .card-grid { grid-template-columns: 1fr; }
+      .timeline::before { left: 20px; }
+      .timeline-item { flex-direction: column !important; }
+      .timeline-content { margin: 0 0 0 40px; }
+      .timeline-dot { left: 20px; }
+    }
+
+    /* アニメーション効果 */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* カスタム スクロールバー */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #1e1f22;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #7289da, #99aab5);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #99aab5, #7289da);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <img src="sese.gif" alt="seseサーバーロゴ">
+      <h1>seseコミュニティ</h1>
+      <p class="subtitle">Discord & マインクラフトで繋がる最高のコミュニティ体験</p>
+      
+      <div class="stats-bar">
+        <div class="stat-item">
+          <div class="stat-number">1,200+</div>
+          <div class="stat-label">アクティブメンバー</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">24/7</div>
+          <div class="stat-label">サーバー稼働</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">5+</div>
+          <div class="stat-label">ゲームモード</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">2年+</div>
+          <div class="stat-label">運営実績</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <button class="tab-btn active" data-tab="discord">🎮 Discordサーバー</button>
+    <button class="tab-btn" data-tab="minecraft">⚒️ マイクラサーバー</button>
+    <button class="tab-btn" data-tab="events">🎉 イベント情報</button>
+    <button class="tab-btn" data-tab="community">👥 コミュニティ</button>
+    <button class="tab-btn" data-tab="faq">❓ FAQ</button>
+  </nav>
+
+  <!-- Discordセクション -->
+  <section id="discord" class="active">
+    <div class="section-header">
+      <h2 class="section-title">Discord コミュニティ</h2>
+      <p class="section-description">
+        1,200人以上のアクティブメンバーが集う、日本最大級のマインクラフトDiscordコミュニティです。
+        初心者から上級者まで、すべての方が楽しめる環境を提供しています。
+      </p>
+    </div>
+
+    <div class="card-grid">
+      <div class="feature-card">
+        <span class="card-icon">🚀</span>
+        <h3 class="card-title">レベル3ブーストサーバー</h3>
+        <p class="card-description">
+          最高品質の音声チャット、カスタム絵文字500個以上、専用サーバーバナー、
+          高音質音楽bot、画面共有機能など、プレミアム機能が全て利用可能です。
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">💬</span>
+        <h3 class="card-title">50+ 専用チャンネル</h3>
+        <p class="card-description">
+          雑談、マイクラ攻略、建築共有、アート投稿、音楽談話、ゲーム実況、
+          プログラミング、学習相談など、あらゆる話題に対応した専用チャンネルを用意。
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">🤖</span>
+        <h3 class="card-title">高機能Bot導入</h3>
+        <p class="card-description">
+          音楽bot（24時間対応）、経済システム、レベリング機能、
+          自動翻訳、天気予報、ゲーム統計、カスタムコマンドなど20+ botが稼働中。
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">🛡️</span>
+        <h3 class="card-title">安全・安心の運営体制</h3>
+        <p class="card-description">
+          24時間モデレーション、荒らし対策AI、新規メンバー保護システム、
+          詳細なルールガイド、専属サポートチームによる安心環境。
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">🎯</span>
+        <h3 class="card-title">ロール・ランクシステム</h3>
+        <p class="card-description">
+          アクティブ度に応じた自動ランクアップ、特別権限の付与、
+          カラーロール、専用チャンネルアクセス、VIP特典など充実したロールシステム。
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">🌟</span>
+        <h3 class="card-title">コミュニティ活動</h3>
+        <p class="card-description">
+          週次イベント、月次大会、季節イベント、メンバー企画、
+          コラボレーション企画、オフライン交流会など多彩な活動を開催。
+        </p>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>チャンネル構成詳細</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <h4>📢 お知らせ系</h4>
+          <p>重要なお知らせ、イベント情報、アップデート通知、メンテナンス情報</p>
+        </div>
+        <div class="detail-item">
+          <h4>💭 雑談系</h4>
+          <p>一般雑談、深夜雑談、画像投稿、meme共有、日記チャンネル</p>
+        </div>
+        <div class="detail-item">
+          <h4>🎮 ゲーム系</h4>
+          <p>マイクラ専用、他ゲーム談話、配信告知、スクリーンショット共有</p>
+        </div>
+        <div class="detail-item">
+          <h4>🎵 エンタメ系</h4>
+          <p>音楽チャンネル、映画・アニメ談話、読書会、創作活動</p>
+        </div>
+        <div class="detail-item">
+          <h4>📚 学習・情報系</h4>
+          <p>プログラミング相談、英語学習、資格試験情報、技術共有</p>
+        </div>
+        <div class="detail-item">
+          <h4>🔧 サポート系</h4>
+          <p>テクニカルサポート、質問・相談、新規メンバーサポート</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <a class="cta-button" href="https://discord.gg/WEWgXFss9p" target="_blank">
+        <span>🚀</span> Discordに今すぐ参加
+      </a>
+      <a class="cta-button" href="#community" onclick="switchTab('community')">
+        <span>👥</span> コミュニティを詳しく見る
+      </a>
+    </div>
+  </section>
+
+  <!-- マイクラセクション -->
+  <section id="minecraft">
+    <div class="section-header">
+      <h2 class="section-title">マインクラフトサーバー</h2>
+      <p class="section-description">
+        最新バージョン対応、複数のゲームモードを楽しめる高性能サーバー群。
+        Java Edition・統合版両対応で、どなたでも参加可能です。
+      </p>
+    </div>
+
+    <div class="card-grid">
+      <div class="feature-card">
+        <span class="card-icon">🏗️</span>
+        <h3 class="card-title">サバイバルサーバー</h3>
+        <p class="card-description">
+          完全バニラ体験に加えて、土地保護システム、経済システム、
+          ショップ機能、テレポート機能など便利機能を追加。
+          大型建築プロジェクトから個人の家まで自由に建築可能。
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">🎲</span>
+        <h3 class="card-title">ミニゲームサーバー</h3>
+        <p class="card-description">
+          PvP、スカイウォーズ、ベッドウォーズ、アスレチック、
+          人狼ゲーム、鬼ごっこ、レース、パズルゲームなど
+          15種類以上のオリジナルミニゲームを常時開催。
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">💰</span>
+        <h3 class="card-title">経済・タウンサーバー</h3>
+        <p class="card-description">
+          リアルな経済システム、株式市場、仮想通貨、
+          会社経営、土地売買、都市開発など本格的な
+          経済シミュレーション要素を楽しめます。
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">🏭</span>
+        <h3 class="card-title">工業・科学サーバー</h3>
+        <p class="card-description">
+          IndustrialCraft、BuildCraft、Applied Energistics等
+          工業系MODを導入した技術重視サーバー。
+          自動化システムや巨大工場の建設が可能。
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">🎨</span>
+        <h3 class="card-title">クリエイティブサーバー</h3>
+        <p class="card-description">
+          建築コンテスト用、アート制作用の専用サーバー。
+          WorldEdit、VoxelSniper等のツール完備。
+          大型建築プロジェクトや芸術作品制作に最適。
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">⚔️</span>
+        <h3 class="card-title">PvP・戦争サーバー</h3>
+        <p class="card-description">
+          ファクション戦争、キャッスルウォー、バトルロワイアル、
+          チーム戦、1vs1デュエル、ランクマッチシステムなど
+          本格的なPvP体験を提供する専用サーバー。
+        </p>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>サーバー技術仕様</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <h4>⚡ 高性能インフラ</h4>
+          <p>最新のIntel Xeon CPU、64GB RAM、NVMe SSD、1Gbps専用回線で99.9%稼働率を実現</p>
+        </div>
+        <div class="detail-item">
+          <h4>🛡️ セキュリティ対策</h4>
+          <p>DDoS攻撃対策、不正アクセス検知、自動バックアップシステム、24時間監視体制</p>
+        </div>
+        <div class="detail-item">
+          <h4>🔧 カスタムプラグイン</h4>
+          <p>独自開発プラグイン50+種類、定期アップデート、バグ修正、機能追加を継続実施</p>
+        </div>
+        <div class="detail-item">
+          <h4>📊 統計・ログ</h4>
+          <p>詳細なプレイ統計、建築ログ、経済取引履歴、チート検知システム搭載</p>
+        </div>
+        <div class="detail-item">
+          <h4>🌐 マルチプラットフォーム</h4>
+          <p>Java Edition、統合版（PE/Switch/Xbox/PS4）、Geyser経由でクロスプレイ対応</p>
+        </div>
+        <div class="detail-item">
+          <h4>💾 データ管理</h4>
+          <p>日次自動バックアップ、プレイヤーデータ保護、ワールドデータ冗長化</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline">
+      <h3 style="text-align: center; margin-bottom: 40px;">サーバー発展の歴史</h3>
+      
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <h4>2023年1月 - サーバー開設</h4>
+          <p>小規模サバイバルサーバーとして開始。初期メンバー50名でスタート。</p>
+        </div>
+        <div class="timeline-dot"></div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <h4>2023年6月 - 大幅アップデート</h4>
+          <p>経済システム実装、ミニゲーム追加、サーバー容量を大幅増強。メンバー300名突破。</p>
+        </div>
+        <div class="timeline-dot"></div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <h4>2023年12月 - マルチサーバー化</h4>
+          <p>5つの専用サーバーに分割、統合版対応開始。メンバー800名を突破。</p>
+        </div>
+        <div class="timeline-dot"></div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <h4>2024年6月 - コミュニティ大拡張</h4>
+          <p>Discord大幅改装、イベントシステム実装。アクティブメンバー1000名超え。</p>
+        </div>
+        <div class="timeline-dot"></div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-content">
+          <h4>2025年1月 - 現在</h4>
+          <p>最新技術導入、AI機能実装、VRサポート開始準備中。メンバー1200名突破！</p>
+        </div>
+        <div class="timeline-dot"></div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <a class="cta-button" href="https://discord.gg/WEWgXFss9p" target="_blank">
+        <span>⚒️</span> サーバーに参加する
+      </a>
+      <a class="cta-button" href="#events" onclick="switchTab('events')">
+        <span>📅</span> イベント情報を見る
+      </a>
+    </div>
+  </section>
+
+  <!-- イベント情報セクション -->
+  <section id="events">
+    <div class="section-header">
+      <h2 class="section-title">イベント＆大会情報</h2>
+      <p class="section-description">
+        毎週開催される様々なイベントで、コミュニティの絆を深めよう！
+        賞品や特別な称号、限定アイテムが手に入るチャンスです。
+      </p>
+    </div>
+
+    <div class="card-grid">
+      <div class="feature-card">
+        <span class="card-icon">🏆</span>
+        <h3 class="card-title">月次建築コンテスト</h3>
+        <p class="card-description">
+          毎月テーマを変えて開催する大型建築コンテスト。
+          優勝者には豪華賞品と専用称号、作品は永久展示。
+          過去テーマ：「未来都市」「ファンタジー城」「和風建築」
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">⚡</span>
+        <h3 class="card-title">週次PvP大会</h3>
+        <p class="card-description">
+          毎週土曜日開催のPvPトーナメント。
+          1vs1、チーム戦、バトルロワイアルなど形式は毎回変更。
+          ランキングシステムとレーティングでスキルを競おう！
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">🎯</span>
+        <h3 class="card-title">アスレチック競技会</h3>
+        <p class="card-description">
+          スピードラン、パルクール、謎解きなど
+          様々なアスレチック競技を開催。
+          タイムアタック形式で記録更新を目指そう！
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">🎨</span>
+        <h3 class="card-title">クリエイティブ企画</h3>
+        <p class="card-description">
+          ピクセルアート大会、レッドストーン回路コンテスト、
+          音楽制作企画、動画制作企画など
+          創造性を発揮できる多彩なイベントを定期開催。
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">🎃</span>
+        <h3 class="card-title">季節限定イベント</h3>
+        <p class="card-description">
+          ハロウィン、クリスマス、バレンタイン、夏祭りなど
+          季節に合わせた特別イベント。
+          限定アイテムや特別な装飾、ミニゲームが登場。
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <span class="card-icon">🎪</span>
+        <h3 class="card-title">コミュニティ企画</h3>
+        <p class="card-description">
+          メンバー主導の企画、オフライン交流会、
+          他サーバーとのコラボイベント、
+          実況配信企画、写真コンテストなど多種多様。
+        </p>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>今月の注目イベント</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <h4>🏗️ 9月建築コンテスト：「学校」</h4>
+          <p>参加締切：9月30日 | 賞品：限定ブロック、称号「Master Builder」、Discord Nitro 3ヶ月分</p>
+        </div>
+        <div class="detail-item">
+          <h4>⚔️ 秋のPvP王者決定戦</h4>
+          <p>開催日：9月21日 20:00〜 | 参加費無料 | 優勝賞品：専用装備、称号「PvP King/Queen」</p>
+        </div>
+        <div class="detail-item">
+          <h4>🎯 スピードビルド選手権</h4>
+          <p>開催日：9月28日 19:00〜 | 制限時間内での建築速度を競う | 賞品：建築アイテムセット</p>
+        </div>
+        <div class="detail-item">
+          <h4>🎵 音楽祭イベント</h4>
+          <p>期間：9月25日〜10月1日 | 音楽をテーマにした建築・演奏企画 | DJ配信イベント同時開催</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <a class="cta-button" href="https://discord.gg/WEWgXFss9p" target="_blank">
+        <span>🎉</span> イベントに参加する
+      </a>
+    </div>
+  </section>
+
+  <!-- コミュニティセクション -->
+  <section id="community">
+    <div class="section-header">
+      <h2 class="section-title">コミュニティ＆スタッフ紹介</h2>
+      <p class="section-description">
+        seseコミュニティを支える素晴らしいメンバーとスタッフチームをご紹介。
+        みんなで作り上げる、温かく楽しいコミュニティです。
+      </p>
+    </div>
+
+    <div class="detail-section">
+      <h3>コミュニティの特徴</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <h4>🌍 多国籍コミュニティ</h4>
+          <p>日本を中心に、韓国、台湾、アメリカ、ヨーロッパなど世界各国からメンバーが参加</p>
+        </div>
+        <div class="detail-item">
+          <h4>👶 年齢層の幅広さ</h4>
+          <p>中学生から社会人まで、幅広い年齢層が共存する健全なコミュニティ環境</p>
+        </div>
+        <div class="detail-item">
+          <h4>🎓 学習支援</h4>
+          <p>プログラミング、英語、数学など学習サポートチャンネルで互いに助け合い</p>
+        </div>
+        <div class="detail-item">
+          <h4>💼 キャリア支援</h4>
+          <p>就職活動相談、転職情報共有、スキルアップ支援など社会人メンバーのサポート</p>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="text-align: center; margin: 50px 0 30px;">スタッフチーム</h3>
+    <div class="staff-grid">
+      <div class="staff-card">
+        <div class="staff-avatar">👑</div>
+        <h4>sese</h4>
+        <p><strong>サーバーオーナー</strong></p>
+        <p>サーバー全体の運営統括、技術管理、重要な意思決定を担当。コミュニティの成長と発展をリード。</p>
+      </div>
+
+      <div class="staff-card">
+        <div class="staff-avatar">⚔️</div>
+        <h4>ModeratorTeam</h4>
+        <p><strong>モデレーター</strong></p>
+        <p>チャット監視、ルール違反対応、新規メンバーサポート。24時間体制でコミュニティの安全を守る。</p>
+      </div>
+
+      <div class="staff-card">
+        <div class="staff-avatar">🎪</div>
+        <h4>EventTeam</h4>
+        <p><strong>イベント企画チーム</strong></p>
+        <p>各種イベントの企画・運営、コンテスト審査、コミュニティ活動の活性化を担当。</p>
+      </div>
+
+      <div class="staff-card">
+        <div class="staff-avatar">🔧</div>
+        <h4>TechTeam</h4>
+        <p><strong>技術サポートチーム</strong></p>
+        <p>サーバー技術管理、プラグイン開発、バグ修正、システムメンテナンスを担当。</p>
+      </div>
+
+      <div class="staff-card">
+        <div class="staff-avatar">🎨</div>
+        <h4>CreativeTeam</h4>
+        <p><strong>クリエイティブチーム</strong></p>
+        <p>建築指導、デザイン制作、コンテンツ企画、コミュニティアートワーク制作を担当。</p>
+      </div>
+
+      <div class="staff-card">
+        <div class="staff-avatar">🌟</div>
+        <h4>SupportTeam</h4>
+        <p><strong>サポートチーム</strong></p>
+        <p>新規メンバーガイド、質問対応、トラブル解決、メンバー間の仲裁を担当。</p>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>コミュニティ統計</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <h4>📊 アクティブ率</h4>
+          <p>日次アクティブ率：85% | 週次アクティブ率：92% | 月次アクティブ率：96%</p>
+        </div>
+        <div class="detail-item">
+          <h4>💬 メッセージ統計</h4>
+          <p>1日平均：15,000+ メッセージ | 月間：450,000+ メッセージ | 総メッセージ：10M+</p>
+        </div>
+        <div class="detail-item">
+          <h4>🎮 ゲーム時間</h4>
+          <p>平均プレイ時間：3.5時間/日 | 総プレイ時間：50,000+ 時間 | 最長セッション：18時間</p>
+        </div>
+        <div class="detail-item">
+          <h4>🏆 イベント参加</h4>
+          <p>月次イベント参加者：800+ 名 | イベント満足度：98% | リピート参加率：89%</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <a class="cta-button" href="https://discord.gg/WEWgXFss9p" target="_blank">
+        <span>👥</span> コミュニティに参加
+      </a>
+    </div>
+  </section>
+
+  <!-- FAQ セクション -->
+  <section id="faq">
+    <div class="section-header">
+      <h2 class="section-title">よくある質問</h2>
+      <p class="section-description">
+        seseサーバーに関するよくある質問とその回答をまとめました。
+        他に疑問がある場合は、お気軽にDiscordでお聞きください。
+      </p>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        <span>💰 参加費用はかかりますか？</span>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>完全無料です！Discordサーバーへの参加、マインクラフトサーバーでのプレイ、
+        すべてのイベント参加に費用は一切かかりません。任意の寄付システムはありますが、
+        強制ではありません。</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        <span>🎮 どのバージョンのマインクラフトが必要ですか？</span>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>Java Edition 1.20.x 最新版を推奨していますが、1.19.x以降であれば参加可能です。
+        統合版（PE/Switch/Xbox/PS4）の方もGeyserを通じて参加できます。
+        詳細な接続方法はDiscordで案内しています。</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        <span>👶 年齢制限はありますか？</span>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>基本的に年齢制限はありませんが、Discord利用規約に従い13歳以上を推奨しています。
+        未成年の方は保護者の方の承諾を得てから参加してください。
+        年齢に関係なく、すべてのメンバーが快適に過ごせる環境づくりを心がけています。</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        <span>🛡️ ルール違反をした場合はどうなりますか？</span>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>違反の程度により、注意 → 警告 → 一時停止 → 永久BANの段階的な措置を取ります。
+        重大な違反（荒らし、嫌がらせ、不適切な発言など）の場合は即座にBANとなることもあります。
+        詳細なルールはDiscordサーバー内で確認できます。</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        <span>🏗️ 建築物は保護されますか？</span>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>はい！土地保護システムにより、あなたの建築物は完全に保護されます。
+        他のプレイヤーは許可なく建築物を破壊・変更できません。
+        また、定期的な自動バックアップにより、万が一の事態にも対応可能です。</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        <span>🎁 特典やボーナスはありますか？</span>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>アクティブメンバーには様々な特典があります！
+        ログイン日数ボーナス、イベント参加特典、ランクアップ報酬、
+        月間MVP選出、限定アイテム配布など。
+        Discord Nitroブーストしてくれた方には特別な謝礼もあります。</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        <span>📱 スマートフォンからでも参加できますか？</span>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>はい！Discordはスマホアプリがあるのでいつでもチャットに参加できます。
+        マインクラフトも統合版（Pocket Edition）から接続可能です。
+        ただし、一部機能はPC版の方が充実しているため、可能であればPCでの参加を推奨します。</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        <span>🔧 技術的な問題が発生した場合は？</span>
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>技術サポートチャンネルで24時間サポートを行っています。
+        接続問題、ゲーム内のバグ、Discord機能の使い方など、
+        どんな問題でもお気軽にご相談ください。
+        専門スタッフが迅速に対応いたします。</p>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <a class="cta-button" href="https://discord.gg/WEWgXFss9p" target="_blank">
+        <span>💬</span> 他の質問をDiscordで聞く
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-content">
+      <h3>seseコミュニティ</h3>
+      <p>最高のマインクラフト＆Discordコミュニティ体験を提供</p>
+      
+      <div class="footer-links">
+        <a href="https://discord.gg/WEWgXFss9p" target="_blank">Discord参加</a>
+        <a href="mailto:penyandpeny@gmail.com">お問い合わせ</a>
+        <a href="#" onclick="switchTab('faq')">利用規約</a>
+        <a href="#" onclick="switchTab('faq')">プライバシーポリシー</a>
+      </div>
+      
+      <p>&copy; 2025 seseサーバー | 運営：sese | 連絡先: penyandpeny@gmail.com</p>
+      <p style="font-size: 12px; opacity: 0.7; margin-top: 20px;">
+        最終更新：2025年9月15日 | バージョン 3.0 | メンバー数：1,200+ | 稼働時間：99.9%
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // タブ切り替え機能
+    function switchTab(tabName) {
+      const buttons = document.querySelectorAll('.tab-btn');
+      const sections = document.querySelectorAll('section');
+
+      buttons.forEach(b => b.classList.remove('active'));
+      sections.forEach(sec => sec.classList.remove('active'));
+
+      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+      document.getElementById(tabName).classList.add('active');
+    }
+
+    // イベントリスナー設定
+    document.addEventListener('DOMContentLoaded', function() {
+      const buttons = document.querySelectorAll('.tab-btn');
+      const sections = document.querySelectorAll('section');
+      const faqItems = document.querySelectorAll('.faq-item');
+
+      // タブボタンイベント
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.getAttribute('data-tab');
+          switchTab(target);
+        });
+      });
+
+      // FAQ アコーディオン機能
+      faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          
+          // 他のFAQアイテムを閉じる
+          faqItems.forEach(otherItem => {
+            otherItem.classList.remove('active');
+          });
+          
+          // クリックしたアイテムをトグル
+          if (!isActive) {
+            item.classList.add('active');
+          }
+        });
+      });
+
+      // スムーススクロール
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+        });
+      });
+
+      // 統計カウンターアニメーション
+      function animateCounters() {
+        const counters = document.querySelectorAll('.stat-number');
+        
+        counters.forEach(counter => {
+          const target = parseInt(counter.textContent.replace(/[^0-9]/g, ''));
+          const increment = target / 50;
+          let current = 0;
+          
+          const updateCounter = () => {
+            if (current < target) {
+              current += increment;
+              counter.textContent = Math.ceil(current) + (counter.textContent.includes('+') ? '+' : '');
+              requestAnimationFrame(updateCounter);
+            } else {
+              counter.textContent = counter.textContent; // 元の値に戻す
+            }
+          };
+          
+          updateCounter();
+        });
+      }
+
+      // ページ読み込み時にカウンターアニメーション実行
+      setTimeout(animateCounters, 1000);
+
+      // 要素の表示アニメーション
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }
+        });
+      }, observerOptions);
+
+      // アニメーション対象要素を監視
+      document.querySelectorAll('.feature-card, .detail-item, .staff-card').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'all 0.6s ease';
+        observer.observe(el);
+      });
+    });
+
+    // パフォーマンス最適化：画像遅延読み込み
+    if ('IntersectionObserver' in window) {
+      const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            img.src = img.dataset.src;
+            img.classList.remove('lazy');
+            imageObserver.unobserve(img);
+          }
+        });
+      });
+
+      document.querySelectorAll('img[data-src]').forEach(img => {
+        imageObserver.observe(img);
+      });
+    }
+  </script>
+</body>
+</html>
